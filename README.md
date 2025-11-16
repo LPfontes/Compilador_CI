@@ -3,6 +3,7 @@
 Este projeto é uma atividade desenvolvida para a disciplina de **Construção de Compiladores I**.
 O projeto consiste em um compilador completo para uma linguagem extremamente simples. O propósito é demonstrar as etapas fundamentais de um compilador no contexto mais simples possível.
 
+O programa já realiza a montagem e linkagem do arquivo. 
 
 A linguagem reconhecida pelo compilador é definida pela seguinte gramática (EBNF):
 
