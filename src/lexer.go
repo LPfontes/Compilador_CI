@@ -12,7 +12,7 @@ var tipos = map[string]string{
 }
 
 func getProximoToken(input string, index *int) Token {
-	for *index < len(input) && (input[*index] == ' ' || input[*index] == '\n' || input[*index] == '\t') {
+	for *index < len(input) && (input[*index] == ' ' || input[*index] == '\n' || input[*index] == '\t') { // Ignora espaços em branco
 		*index++
 	}
 	if *index >= len(input) {
@@ -20,11 +20,12 @@ func getProximoToken(input string, index *int) Token {
 	}
 	start := *index
 	char := string(input[*index])
-	if val, ok := tipos[char]; ok {
+	if val, ok := tipos[char]; ok { // Verifica se o caractere é um símbolo conhecido
 		*index++
 		return Token{Tipo: val, Literal: char, posicao: start}
 	}
-	if input[*index] >= '0' && input[*index] <= '9' {
+
+	if input[*index] >= '0' && input[*index] <= '9' { // Verifica se é um número
 		for *index < len(input) && input[*index] >= '0' && input[*index] <= '9' {
 			*index++
 		}

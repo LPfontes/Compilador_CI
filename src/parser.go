@@ -33,18 +33,18 @@ func (p *Parser) analisaExp() (Exp, error) {
 	} else if tok.Tipo == "ParenEsq" {
 		p.consumir() // consome '('
 
-		opEsq, err := p.analisaExp()
+		opEsq, err := p.analisaExp() // descobre o operando esquerdo Descida Recursiva
 		if err != nil {
 			return nil, err
 		}
 
 		// analisaOperador()
 		operadorTok := p.consumir()
-		if _, ok := tipos[operadorTok.Literal]; !ok || operadorTok.Tipo == "ParenEsq" || operadorTok.Tipo == "ParenDir" {
+		if _, ok := tipos[operadorTok.Literal]; !ok || operadorTok.Tipo == "ParenEsq" || operadorTok.Tipo == "ParenDir" { // Verifica se é um operador válido
 			return nil, fmt.Errorf("esperado operador na posição %d", operadorTok.posicao)
 		}
 
-		opDir, err := p.analisaExp()
+		opDir, err := p.analisaExp() // descobre o operando direito Descida Recursiva
 		if err != nil {
 			return nil, err
 		}

@@ -9,7 +9,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Uso: go run principal.go \"(1 + 2)\"")
+		fmt.Println("Uso: go run main.go \"(1 + 2)\"")
 		return
 	}
 	if _, err := os.Stat("arvore"); os.IsNotExist(err) {

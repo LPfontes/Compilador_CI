@@ -50,17 +50,21 @@ sudo apt install golang graphviz build-essential
 ```
 
 ## 🛠️ Como Executar
+1.  **Acesse a pasta src**
+    ```bash
+    cd src
+    ```
 
-1.  **Baixe as dependências do Go:**
+2.  **Baixe as dependências do Go:**
 
     ```bash
     go mod tidy
     ```
 
-2.  **Execute o compilador passando a expressão entre aspas:**
+3.  **Execute o compilador passando a expressão entre aspas:**
 
     ```bash
-    go run ./src "(3 * (2 + 5))"
+    go run ./ "(3 * (2 + 5))"
     ```
 
 ### Saída Esperada
