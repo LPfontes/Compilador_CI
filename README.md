@@ -17,9 +17,9 @@ O projeto executa o pipeline completo de um compilador:
 
 Para executar este projeto, você precisará das seguintes ferramentas instaladas no seu ambiente Linux:
 
-*   **Go** (versão 1.23 ou superior)
-*   **Graphviz** (para o comando `dot` gerar a imagem da árvore)
-*   **GCC/Binutils** (para os comandos `as` e `ld`)
+- **Go** (versão 1.23 ou superior)
+- **Graphviz** (para o comando `dot` gerar a imagem da árvore)
+- **GCC/Binutils** (para os comandos `as` e `ld`)
 
 ### Instalação das dependências (Ubuntu/Debian)
 
@@ -33,10 +33,16 @@ sudo apt install golang graphviz build-essential
 ```text
 .
 ├── src/
-│   ├── main.go         # Código fonte principal (Lexer, Parser, Compiler)
+│   ├── ast.go          # Definições da Árvore Sintática (AST)
+│   ├── compiler.go     # Geração de Assembly e execução
+│   ├── interpreter.go  # Lógica do interpretador
+│   ├── lexer.go        # Análise Léxica
+│   ├── main.go         # Principal
+│   ├── parser.go       # Análise Sintática
+│   ├── visualizer.go   # Geração da visualização gráfica
 │   └── main_test.go    # Testes automatizados
 ├── assembly/
-│   └── runtime.s       # Rotinas de suporte (ex: printar número)
+│   └── runtime.s       # Rotinas de suporte 
 ├── arvore/             # Saída: Arquivos .dot e .png da árvore gerada
 ├── output/             # Saída: Arquivos .s, .o e o binário final
 ├── go.mod              # Gerenciador de dependências Go
@@ -54,21 +60,23 @@ sudo apt install golang graphviz build-essential
 2.  **Execute o compilador passando a expressão entre aspas:**
 
     ```bash
-    go run src/main.go "(3 * (2 + 5))"
+    go run ./src "(3 * (2 + 5))"
     ```
 
 ### Saída Esperada
 
 O programa irá imprimir no terminal:
-*   A estrutura da árvore em texto.
-*   O resultado calculado pelo interpretador.
-*   Mensagens de sucesso da geração da imagem e do binário.
-*   A execução do binário gerado.
+
+- A estrutura da árvore em texto.
+- O resultado calculado pelo interpretador.
+- Mensagens de sucesso da geração da imagem e do binário.
+- A execução do binário gerado.
 
 Além disso, verifique:
-*   **Imagem da Árvore:** `arvore/arvore.png`
-*   **Código Assembly:** `output/output.s`
-*   **Executável:** `output/output`
+
+- **Imagem da Árvore:** `arvore/arvore.png`
+- **Código Assembly:** `output/output.s`
+- **Executável:** `output/output`
 
 ## 🧪 Testes
 
@@ -77,5 +85,5 @@ O projeto possui testes automatizados que verificam o interpretador e a compila�
 Para rodar os testes:
 
 ```bash
-go test -v src/main.go src/main_test.go
+go test -v ./src
 ```
