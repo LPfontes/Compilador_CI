@@ -25,12 +25,13 @@ func main() {
 		}
 	}
 	input := os.Args[1]
+	// LEXER
 	tokens, err := tokenize(input)
 	if err != nil {
 		fmt.Println("Erro Léxico:", err)
 		return
 	}
-
+	// PARSER
 	parser := &Parser{tokens: tokens}
 	arvore, err := parser.analisaExp()
 	if err != nil {
@@ -39,7 +40,7 @@ func main() {
 	}
 
 	fmt.Printf("Árvore gerada %+v\n", arvore)
-	gerarVisualizacao(arvore)
+	gerarVisualizacao(arvore, "arvore")
 	resultado, err := interpretar(arvore)
 	if err != nil {
 		fmt.Println("Erro de Execução:", err)

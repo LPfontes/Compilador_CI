@@ -22,7 +22,52 @@ func (p *Parser) consumir() Token {
 	return t
 }
 
+// analisaExp (Expression): Lida com Soma e Subtração exp_a
 func (p *Parser) analisaExp() (Exp, error) {
+	esq, err := p.analisaTermo()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.atual().Tipo == "Soma" || p.atual().Tipo == "Sub" {
+		op := p.consumir()
+		dir, err := p.analisaTermo()
+		if err != nil {
+			return nil, err
+		}
+		esq = OpBin{
+			Operador: op.Literal,
+			OpEsq:    esq,
+			OpDir:    dir,
+		}
+	}
+	return esq, nil
+}
+
+// analisaTermo (Term): Lida com Multiplicação e Divisão <exp_m>
+func (p *Parser) analisaTermo() (Exp, error) {
+	esq, err := p.analisaFator()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.atual().Tipo == "Mult" || p.atual().Tipo == "Div" {
+		op := p.consumir()
+		dir, err := p.analisaFator()
+		if err != nil {
+			return nil, err
+		}
+		esq = OpBin{
+			Operador: op.Literal,
+			OpEsq:    esq,
+			OpDir:    dir,
+		}
+	}
+	return esq, nil
+}
+
+// analisaFator (Factor): Lida com números e parênteses (a unidade básica) <prim>
+func (p *Parser) analisaFator() (Exp, error) {
 	tok := p.atual()
 
 	if tok.Tipo == "Numero" {
@@ -33,33 +78,17 @@ func (p *Parser) analisaExp() (Exp, error) {
 	} else if tok.Tipo == "ParenEsq" {
 		p.consumir() // consome '('
 
-		opEsq, err := p.analisaExp() // descobre o operando esquerdo Descida Recursiva
+		exp, err := p.analisaExp()
 		if err != nil {
 			return nil, err
 		}
 
-		// analisaOperador()
-		operadorTok := p.consumir()
-		if _, ok := tipos[operadorTok.Literal]; !ok || operadorTok.Tipo == "ParenEsq" || operadorTok.Tipo == "ParenDir" { // Verifica se é um operador válido
-			return nil, fmt.Errorf("esperado operador na posição %d", operadorTok.posicao)
-		}
-
-		opDir, err := p.analisaExp() // descobre o operando direito Descida Recursiva
-		if err != nil {
-			return nil, err
-		}
-
-		// verificaProxToken(FECHA_PARENTESE)
 		if p.atual().Tipo != "ParenDir" {
 			return nil, fmt.Errorf("esperado ')' na posição %d", p.atual().posicao)
 		}
 		p.consumir() // consome ')'
 
-		return OpBin{
-			Operador: operadorTok.Literal,
-			OpEsq:    opEsq,
-			OpDir:    opDir,
-		}, nil
+		return exp, nil
 	}
 
 	return nil, fmt.Errorf("erro sintático: token inesperado %s na posição %d", tok.Literal, tok.posicao)

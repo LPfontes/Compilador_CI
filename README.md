@@ -7,7 +7,7 @@ Este projeto é uma implementação prática para a disciplina de **Construção
 O projeto executa o pipeline completo de um compilador:
 
 1.  **Análise Léxica (Lexer):** Tokeniza a entrada, identificando números, parênteses e operadores (`+`, `-`, `*`, `/`).
-2.  **Análise Sintática (Parser):** Constrói uma Árvore Sintática Abstrata (AST) respeitando a precedência definida por parênteses.
+2.  **Análise Sintática (Parser):** Constrói uma Árvore Sintática Abstrata (AST) respeitando a precedência de operadores (multiplicação e divisão têm prioridade sobre soma e subtração) e parênteses.
 3.  **Interpretador:** Percorre a árvore recursivamente para calcular o resultado imediatamente.
 4.  **Visualização:** Gera uma imagem `.png` da árvore sintática utilizando a biblioteca `graph` e o software Graphviz.
 5.  **Geração de Código:** Traduz a AST para Assembly x86-64 (sintaxe AT&T).
@@ -41,6 +41,7 @@ sudo apt install golang graphviz build-essential
 │   ├── parser.go       # Análise Sintática
 │   ├── visualizer.go   # Geração da visualização gráfica
 │   └── main_test.go    # Testes automatizados
+│   └── parser_test.go  # Testes de precedência e parser
 ├── assembly/
 │   └── runtime.s       # Rotinas de suporte 
 ├── arvore/             # Saída: Arquivos .dot e .png da árvore gerada
@@ -64,7 +65,7 @@ sudo apt install golang graphviz build-essential
 3.  **Execute o compilador passando a expressão entre aspas:**
 
     ```bash
-    go run ./ "(3 * (2 + 5))"
+    go run ./ "10 + 2 * 3"
     ```
 
 ### Saída Esperada
@@ -84,10 +85,13 @@ Além disso, verifique:
 
 ## 🧪 Testes
 
-O projeto possui testes automatizados que verificam o interpretador e a compilação de diversos casos (soma, subtração, aninhamento, divisão por zero, etc).
+O projeto possui testes automatizados que verificam o interpretador, a compilação e a precedência de operadores em diversos casos.
 
 Para rodar os testes:
 
 ```bash
-go test -v ./src
+cd src
+```
+```bash
+go test -v ./
 ```

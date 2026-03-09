@@ -12,7 +12,7 @@ var tipos = map[string]string{
 }
 
 func getProximoToken(input string, index *int) Token {
-	for *index < len(input) && (input[*index] == ' ' || input[*index] == '\n' || input[*index] == '\t') { // Ignora espaços em branco
+	for *index < len(input) && (input[*index] == ' ' || input[*index] == '\n' || input[*index] == '\t') {
 		*index++
 	}
 	if *index >= len(input) {

@@ -15,7 +15,7 @@ type graphNode struct {
 	Label string
 }
 
-func gerarVisualizacao(root Exp) {
+func gerarVisualizacao(root Exp, nomeBase string) {
 	g := graph.New(func(n *graphNode) int {
 		return n.ID
 	}, graph.Directed())
@@ -37,18 +37,24 @@ func gerarVisualizacao(root Exp) {
 			node := &graphNode{ID: currentID, Label: label}
 			_ = g.AddVertex(node, graph.VertexAttribute("label", label), graph.VertexAttribute("shape", "box"))
 
-			rightID := buildGraph(v.OpEsq)
-			leftID := buildGraph(v.OpDir)
+			leftID := buildGraph(v.OpEsq)
+			rightID := buildGraph(v.OpDir)
 
-			_ = g.AddEdge(currentID, rightID)
 			_ = g.AddEdge(currentID, leftID)
+			_ = g.AddEdge(currentID, rightID)
 		}
 		return currentID
 	}
 
 	buildGraph(root)
 
-	file, err := os.Create("arvore/arvore.dot")
+	if _, err := os.Stat("arvore"); os.IsNotExist(err) {
+		_ = os.Mkdir("arvore", 0755)
+	}
+
+	dotPath := "arvore/" + nomeBase + ".dot"
+	pngPath := "arvore/" + nomeBase + ".png"
+	file, err := os.Create(dotPath)
 	if err != nil {
 		fmt.Println("Erro ao criar arquivo DOT:", err)
 		return
@@ -60,10 +66,10 @@ func gerarVisualizacao(root Exp) {
 		return
 	}
 
-	cmd := exec.Command("dot", "-Tpng", "arvore/arvore.dot", "-o", "arvore/arvore.png")
+	cmd := exec.Command("dot", "-Tpng", dotPath, "-o", pngPath)
 	if err := cmd.Run(); err != nil {
-		fmt.Println("Arquivo 'arvore.dot' gerado. Para visualizar, instale o Graphviz e execute: dot -Tpng arvore/arvore.dot -o arvore/arvore.png")
+		fmt.Printf("Arquivo '%s' gerado. Para visualizar, instale o Graphviz e execute: dot -Tpng %s -o %s\n", dotPath, dotPath, pngPath)
 	} else {
-		fmt.Println("Imagem 'arvore.png' gerada com sucesso!")
+		fmt.Printf("Imagem '%s' gerada com sucesso!\n", pngPath)
 	}
 }
