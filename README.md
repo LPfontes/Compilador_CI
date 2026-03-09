@@ -9,7 +9,7 @@ O projeto executa o pipeline completo de um compilador:
 1.  **Análise Léxica (Lexer):** Tokeniza a entrada, identificando números, parênteses e operadores (`+`, `-`, `*`, `/`).
 2.  **Análise Sintática (Parser):** Constrói uma Árvore Sintática Abstrata (AST) respeitando a precedência de operadores (multiplicação e divisão têm prioridade sobre soma e subtração) e parênteses.
 3.  **Interpretador:** Percorre a árvore recursivamente para calcular o resultado imediatamente.
-4.  **Visualização:** Gera uma imagem `.png` da árvore sintática utilizando a biblioteca `graph` e o software Graphviz.
+4.  **Visualização:** Gera uma imagem `.png` da árvore sintática utilizando o software Graphviz.
 5.  **Geração de Código:** Traduz a AST para Assembly x86-64 (sintaxe AT&T).
 6.  **Montagem e Ligação:** Automatiza o uso do `as` (assembler) e `ld` (linker) para gerar um binário executável.
 

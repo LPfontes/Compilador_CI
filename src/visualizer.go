@@ -5,49 +5,9 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-
-	"github.com/dominikbraun/graph"
-	"github.com/dominikbraun/graph/draw"
 )
 
-type graphNode struct {
-	ID    int
-	Label string
-}
-
 func gerarVisualizacao(root Exp, nomeBase string) {
-	g := graph.New(func(n *graphNode) int {
-		return n.ID
-	}, graph.Directed())
-
-	var idCounter int
-	var buildGraph func(e Exp) int
-
-	buildGraph = func(e Exp) int {
-		currentID := idCounter
-		idCounter++
-
-		switch v := e.(type) {
-		case Const:
-			label := strconv.Itoa(v.Valor)
-			node := &graphNode{ID: currentID, Label: label}
-			_ = g.AddVertex(node, graph.VertexAttribute("label", label), graph.VertexAttribute("shape", "circle"))
-		case OpBin:
-			label := v.Operador
-			node := &graphNode{ID: currentID, Label: label}
-			_ = g.AddVertex(node, graph.VertexAttribute("label", label), graph.VertexAttribute("shape", "box"))
-
-			leftID := buildGraph(v.OpEsq)
-			rightID := buildGraph(v.OpDir)
-
-			_ = g.AddEdge(currentID, leftID)
-			_ = g.AddEdge(currentID, rightID)
-		}
-		return currentID
-	}
-
-	buildGraph(root)
-
 	if _, err := os.Stat("arvore"); os.IsNotExist(err) {
 		_ = os.Mkdir("arvore", 0755)
 	}
@@ -61,10 +21,34 @@ func gerarVisualizacao(root Exp, nomeBase string) {
 	}
 	defer file.Close()
 
-	if err := draw.DOT(g, file); err != nil {
-		fmt.Println("Erro ao gerar DOT:", err)
-		return
+	file.WriteString("digraph G {\n")
+
+	var idCounter int
+	var writeNode func(e Exp) int
+
+	writeNode = func(e Exp) int {
+		id := idCounter
+		idCounter++
+
+		switch v := e.(type) {
+		case Const:
+			label := strconv.Itoa(v.Valor)
+			file.WriteString(fmt.Sprintf("    %d [label=\"%s\", shape=circle];\n", id, label))
+		case OpBin:
+			label := v.Operador
+			file.WriteString(fmt.Sprintf("    %d [label=\"%s\", shape=box];\n", id, label))
+
+			leftID := writeNode(v.OpEsq)
+			rightID := writeNode(v.OpDir)
+
+			file.WriteString(fmt.Sprintf("    %d -> %d;\n", id, leftID))
+			file.WriteString(fmt.Sprintf("    %d -> %d;\n", id, rightID))
+		}
+		return id
 	}
+
+	writeNode(root)
+	file.WriteString("}\n")
 
 	cmd := exec.Command("dot", "-Tpng", dotPath, "-o", pngPath)
 	if err := cmd.Run(); err != nil {
