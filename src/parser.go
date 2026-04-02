@@ -75,6 +75,10 @@ func (p *Parser) analisaFator() (Exp, error) {
 		valor, _ := strconv.Atoi(tok.Literal)
 		return Const{Valor: valor}, nil
 
+	} else if tok.Tipo == "Identificador" {
+		p.consumir()
+		return Var{Nome: tok.Literal}, nil
+
 	} else if tok.Tipo == "ParenEsq" {
 		p.consumir() // consome '('
 
@@ -92,4 +96,48 @@ func (p *Parser) analisaFator() (Exp, error) {
 	}
 
 	return nil, fmt.Errorf("erro sintático: token inesperado %s na posição %d", tok.Literal, tok.posicao)
+}
+
+func (p *Parser) analisaDecl() (Decl, error) {
+	nomeTok := p.consumir() // Identificador
+	if p.atual().Tipo != "Atribuicao" {
+		return Decl{}, fmt.Errorf("esperava '=' após variável '%s', mas encontrou '%s'", nomeTok.Literal, p.atual().Literal)
+	}
+	p.consumir() // consome '='
+
+	exp, err := p.analisaExp()
+	if err != nil {
+		return Decl{}, err
+	}
+
+	if p.atual().Tipo != "PontoVirgula" {
+		return Decl{}, fmt.Errorf("esperava ';' no final da declaração de '%s', mas encontrou '%s'", nomeTok.Literal, p.atual().Literal)
+	}
+	p.consumir() // consome ';'
+
+	return Decl{Nome: nomeTok.Literal, Expressao: exp}, nil
+}
+
+func (p *Parser) analisaPrograma() (Programa, error) {
+	var decs []Decl
+
+	for p.atual().Tipo == "Identificador" {
+		dec, err := p.analisaDecl()
+		if err != nil {
+			return Programa{}, err
+		}
+		decs = append(decs, dec)
+	}
+
+	if p.atual().Tipo != "Atribuicao" {
+		return Programa{}, fmt.Errorf("esperava '=' para a expressão de resultado, mas encontrou '%s'", p.atual().Literal)
+	}
+	p.consumir() // '='
+
+	result, err := p.analisaExp()
+	if err != nil {
+		return Programa{}, err
+	}
+
+	return Programa{Declaracoes: decs, Resultado: result}, nil
 }

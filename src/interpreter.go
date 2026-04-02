@@ -5,16 +5,27 @@ import (
 	"fmt"
 )
 
-func interpretar(n Exp) (int, error) {
+func interpretar(n Exp, amb map[string]int) (int, error) {
 	switch v := n.(type) {
 	case Const:
 		return v.Valor, nil
+	case Var:
+		return amb[v.Nome], nil
+	case Programa:
+		for _, decl := range v.Declaracoes {
+			val, err := interpretar(decl.Expressao, amb)
+			if err != nil {
+				return 0, err
+			}
+			amb[decl.Nome] = val
+		}
+		return interpretar(v.Resultado, amb)
 	case OpBin:
-		esq, err := interpretar(v.OpEsq)
+		esq, err := interpretar(v.OpEsq, amb)
 		if err != nil {
 			return 0, err
 		}
-		dir, err := interpretar(v.OpDir)
+		dir, err := interpretar(v.OpDir, amb)
 		if err != nil {
 			return 0, err
 		}

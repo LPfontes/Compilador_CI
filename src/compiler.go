@@ -22,6 +22,8 @@ func getAsmInstruction(op string) string {
 
 func gerarAssembly(n Exp) string {
 	switch v := n.(type) {
+	case Var:
+		return fmt.Sprintf("\tmovq %s(%%rip), %%rax\n\tpushq %%rax\n", v.Nome)
 	case Const:
 		return fmt.Sprintf("\tpushq $%d\n", v.Valor)
 	case OpBin:
@@ -49,9 +51,32 @@ func gerarAssembly(n Exp) string {
 	return ""
 }
 
-func compilar(root Exp, path string) {
-	assembly := ".section .text\n.globl _start\n_start:\n"
-	assembly += gerarAssembly(root)
+func compilar(root Programa, path string) {
+	bss := ""
+	if len(root.Declaracoes) > 0 {
+		bss = ".section .bss\n"
+		tabela := make(map[string]bool)
+		for _, decl := range root.Declaracoes {
+			if !tabela[decl.Nome] {
+				bss += fmt.Sprintf("\t.lcomm %s, 8\n", decl.Nome)
+				tabela[decl.Nome] = true
+			}
+		}
+	}
+
+	assembly := ""
+	if bss != "" {
+		assembly += bss + "\n"
+	}
+	assembly += ".section .text\n.globl _start\n_start:\n"
+	
+	for _, decl := range root.Declaracoes {
+		assembly += gerarAssembly(decl.Expressao)
+		assembly += "\tpopq %rax\n"
+		assembly += fmt.Sprintf("\tmovq %%rax, %s(%%rip)\n", decl.Nome)
+	}
+
+	assembly += gerarAssembly(root.Resultado)
 	assembly += "\tpopq %rax\n\tcall imprime_num\n\tcall sair\n\t.include \"assembly/runtime.s\"\n"
 
 	err := os.WriteFile(path, []byte(assembly), 0644)

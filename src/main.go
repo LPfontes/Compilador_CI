@@ -33,15 +33,23 @@ func main() {
 	}
 	// PARSER
 	parser := &Parser{tokens: tokens}
-	arvore, err := parser.analisaExp()
+	arvore, err := parser.analisaPrograma()
 	if err != nil {
 		fmt.Println("Erro Sintático:", err)
 		return
 	}
 
+	err = AnalisarSemantica(arvore)
+	if err != nil {
+		fmt.Println("Erro Semântico:", err)
+		return
+	}
+
 	fmt.Printf("Árvore gerada %+v\n", arvore)
 	gerarVisualizacao(arvore, "arvore")
-	resultado, err := interpretar(arvore)
+	
+	amb := make(map[string]int)
+	resultado, err := interpretar(arvore, amb)
 	if err != nil {
 		fmt.Println("Erro de Execução:", err)
 		return

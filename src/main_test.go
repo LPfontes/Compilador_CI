@@ -30,20 +30,20 @@ func TestInterpretador(t *testing.T) {
 	for _, caso := range casos {
 		t.Run(caso.nome, func(t *testing.T) {
 			// 1. Tokenização
-			tokens, err := tokenize(caso.entrada)
+			tokens, err := tokenize("= " + caso.entrada)
 			if err != nil {
 				t.Fatalf("Erro na tokenização: %v", err)
 			}
 
 			// 2. Parsing
 			parser := &Parser{tokens: tokens}
-			arvore, err := parser.analisaExp()
+			arvore, err := parser.analisaPrograma()
 			if err != nil {
 				t.Fatalf("Erro no parser: %v", err)
 			}
 
 			// 3. Interpretação
-			resultado, err := interpretar(arvore)
+			resultado, err := interpretar(arvore, make(map[string]int))
 
 			if caso.temErro {
 				if err == nil {
@@ -82,9 +82,9 @@ func TestCompilador(t *testing.T) {
 	index := 0
 	for _, caso := range casos {
 		t.Run(caso.nome, func(t *testing.T) {
-			tokens, _ := tokenize(caso.entrada)
+			tokens, _ := tokenize("= " + caso.entrada)
 			parser := &Parser{tokens: tokens}
-			arvore, _ := parser.analisaExp()
+			arvore, _ := parser.analisaPrograma()
 
 			// 1. Gera o Assembly (output/output.s)
 			compilar(arvore, "output/output"+strconv.Itoa(index)+".s")

@@ -23,3 +23,21 @@ type OpBin struct {
 }
 
 func (o OpBin) isExp() {}
+
+type Var struct {
+	Nome string
+}
+
+func (v Var) isExp() {}
+
+type Decl struct {
+	Nome      string
+	Expressao Exp
+}
+
+type Programa struct {
+	Declaracoes []Decl
+	Resultado   Exp
+}
+
+func (p Programa) isExp() {}

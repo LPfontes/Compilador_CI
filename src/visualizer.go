@@ -31,6 +31,8 @@ func gerarVisualizacao(root Exp, nomeBase string) {
 		idCounter++
 
 		switch v := e.(type) {
+		case Var:
+			file.WriteString(fmt.Sprintf("    %d [label=\"Var(%s)\", shape=ellipse];\n", id, v.Nome))
 		case Const:
 			label := strconv.Itoa(v.Valor)
 			file.WriteString(fmt.Sprintf("    %d [label=\"%s\", shape=circle];\n", id, label))
@@ -43,6 +45,18 @@ func gerarVisualizacao(root Exp, nomeBase string) {
 
 			file.WriteString(fmt.Sprintf("    %d -> %d;\n", id, leftID))
 			file.WriteString(fmt.Sprintf("    %d -> %d;\n", id, rightID))
+		case Programa:
+			file.WriteString(fmt.Sprintf("    %d [label=\"Programa\", shape=invhouse];\n", id))
+			for i, decl := range v.Declaracoes {
+				declID := idCounter
+				idCounter++
+				file.WriteString(fmt.Sprintf("    %d [label=\"Decl(%s)\", shape=rectangle];\n", declID, decl.Nome))
+				file.WriteString(fmt.Sprintf("    %d -> %d [label=\"decl %d\"];\n", id, declID, i))
+				expID := writeNode(decl.Expressao)
+				file.WriteString(fmt.Sprintf("    %d -> %d [label=\"exp\"];\n", declID, expID))
+			}
+			resID := writeNode(v.Resultado)
+			file.WriteString(fmt.Sprintf("    %d -> %d [label=\"resultado\"];\n", id, resID))
 		}
 		return id
 	}

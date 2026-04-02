@@ -9,6 +9,8 @@ var tipos = map[string]string{
 	"-": "Sub",
 	"*": "Mult",
 	"/": "Div",
+	"=": "Atribuicao",
+	";": "PontoVirgula",
 }
 
 func getProximoToken(input string, index *int) Token {
@@ -31,6 +33,14 @@ func getProximoToken(input string, index *int) Token {
 		}
 		return Token{Tipo: "Numero", Literal: input[start:*index], posicao: start}
 	}
+
+	if (input[*index] >= 'a' && input[*index] <= 'z') || (input[*index] >= 'A' && input[*index] <= 'Z') { // Verifica se é um identificador
+		for *index < len(input) && ((input[*index] >= 'a' && input[*index] <= 'z') || (input[*index] >= 'A' && input[*index] <= 'Z') || (input[*index] >= '0' && input[*index] <= '9')) {
+			*index++
+		}
+		return Token{Tipo: "Identificador", Literal: input[start:*index], posicao: start}
+	}
+
 	*index++
 	return Token{Tipo: "INVALIDO", Literal: char, posicao: start}
 }

@@ -75,14 +75,14 @@ func TestPrecedenciaOperadores(t *testing.T) {
 
 	for _, caso := range casos {
 		t.Run(caso.nome, func(t *testing.T) {
-			tokens, _ := tokenize(caso.entrada)
+			tokens, _ := tokenize("= " + caso.entrada)
 			parser := &Parser{tokens: tokens}
-			arvore, _ := parser.analisaExp()
+			arvore, _ := parser.analisaPrograma()
 
 			nomeArquivo := strings.ReplaceAll(caso.nome, " ", "_")
 			gerarVisualizacao(arvore, nomeArquivo)
 
-			resultado, _ := interpretar(arvore)
+			resultado, _ := interpretar(arvore, make(map[string]int))
 
 			if resultado != caso.esperado {
 				t.Errorf("Para '%s': esperado %d, obtido %d", caso.entrada, caso.esperado, resultado)
