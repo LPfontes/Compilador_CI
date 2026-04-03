@@ -47,13 +47,21 @@ func gerarVisualizacao(root Exp, nomeBase string) {
 			file.WriteString(fmt.Sprintf("    %d -> %d;\n", id, rightID))
 		case Programa:
 			file.WriteString(fmt.Sprintf("    %d [label=\"Programa\", shape=invhouse];\n", id))
-			for i, decl := range v.Declaracoes {
+			for i, decl := range v.Globais {
 				declID := idCounter
 				idCounter++
 				file.WriteString(fmt.Sprintf("    %d [label=\"Decl(%s)\", shape=rectangle];\n", declID, decl.Nome))
 				file.WriteString(fmt.Sprintf("    %d -> %d [label=\"decl %d\"];\n", id, declID, i))
 				expID := writeNode(decl.Expressao)
 				file.WriteString(fmt.Sprintf("    %d -> %d [label=\"exp\"];\n", declID, expID))
+			}
+			for i, fun := range v.Funcoes {
+				funID := idCounter
+				idCounter++
+				file.WriteString(fmt.Sprintf("    %d [label=\"Fun(%s)\", shape=hexagon];\n", funID, fun.Nome))
+				file.WriteString(fmt.Sprintf("    %d -> %d [label=\"func %d\"];\n", id, funID, i))
+				resID := writeNode(fun.Resultado)
+				file.WriteString(fmt.Sprintf("    %d -> %d [label=\"ret\"];\n", funID, resID))
 			}
 			resID := writeNode(v.Resultado)
 			file.WriteString(fmt.Sprintf("    %d -> %d [label=\"resultado\"];\n", id, resID))

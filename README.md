@@ -1,28 +1,121 @@
-# Compilador e Interpretador de Expressões Aritméticas (CI)
+# Compilador e Interpretador de Linguagem Fun (CI)
 
-Este projeto é uma implementação prática para a disciplina de **Construção de Compiladores I**. Ele consiste em um compilador e interpretador capaz de processar expressões aritméticas, gerar a Árvore Sintática Abstrata (AST), visualizar essa árvore graficamente e compilar o código para Assembly x86-64.
+Este projeto é a implementação prática do compilador para a linguagem procedimental **Fun** (derivada das antigas linguagens Expr e Cmd), construído para a disciplina de **Construção de Compiladores I**. Ele é um compilador Turing-Completo nativo, capaz de gerar código diretamente para a arquitetura Assembly x86-64, lidando com controle de rotinas, ponteiros de pilha, recursão, funções e vetores.
 
 ## 🚀 Funcionalidades
 
-O projeto executa o pipeline completo de um compilador:
+O projeto executa o pipeline completo de compilação:
 
-1.  **Análise Léxica (Lexer):** Tokeniza a entrada, identificando números, parênteses e operadores (`+`, `-`, `*`, `/`).
-2.  **Análise Sintática (Parser):** Constrói uma Árvore Sintática Abstrata (AST) respeitando a precedência de operadores (multiplicação e divisão têm prioridade sobre soma e subtração) e parênteses.
-3.  **Interpretador:** Percorre a árvore recursivamente para calcular o resultado imediatamente.
-4.  **Visualização:** Gera uma imagem `.png` da árvore sintática utilizando o software Graphviz.
-5.  **Geração de Código:** Traduz a AST para Assembly x86-64 (sintaxe AT&T).
-6.  **Montagem e Ligação:** Automatiza o uso do `as` (assembler) e `ld` (linker) para gerar um binário executável.
+1.  **Análise Léxica (Lexer):** Tokenização de Identificadores, Keywords (`var`, `fun`, `main`, `if`, `else`, `for`, `while`, `return`), Operadores Aritméticos (`+`, `-`, `*`, `/`), Relacionais (`<`, `>`, `==`, `!=`, `<=`, `>=`), Lógicos (`and`, `or`, `not`) e delimitadores (`{ }`, `[ ]`, `( )`).
+2.  **Análise Sintática (Parser):** Parser LL recursivo com lookahead para distinguir entre acesso a variáveis, chamadas de função (`nome(args)`) e acesso a vetores (`nome[indice]`).
+3.  **Analisador Semântico:** Validação de escopo cruzando tabelas Globais e Locais, verificação de aridade em chamadas de função e validação de declarações de vetores.
+4.  **Interpretador:** Execução simulada via tree-walk com frames isolados por chamada de função, suporte a vetores via chaves compostas no mapa de memória.
+5.  **Compilador Assembly x86-64:** Geração de código AT&T com:
+    - Stack Frames com prólogo/epílogo (`%rbp`/`%rsp`)
+    - Endereçamento de parâmetros via offsets positivos de `%rbp`
+    - Variáveis locais e vetores alocados na pilha
+    - Vetores globais na seção `.bss` com `.lcomm`
+    - Acesso indexado a vetores via endereçamento base+índice (`leaq` + `(%rdx, %rcx, 8)`)
+6.  **Otimizador Peephole:** Pós-processamento do assembly gerado que elimina pares redundantes de `pushq`/`popq`, substituindo por `movq` diretos ou removendo completamente quando desnecessários.
+7.  **Operações Vetoriais AVX2 (SIMD):** Builtins que mapeiam diretamente para instruções AVX2, processando **4 inteiros de 64 bits em paralelo** usando registradores `%ymm` de 256 bits:
+    - `vadd(dest, src1, src2, n)` → `vpaddq` (soma paralela)
+    - `vsub(dest, src1, src2, n)` → `vpsubq` (subtração paralela)
+    - `vset(dest, valor, n)` → `vpbroadcastq` (preenchimento broadcast)
+    - Loop automático para vetores maiores que 4 elementos
+    - Alinhamento `.balign 32` para vetores globais
+8.  **Integração (Montagem/Ligação):** Execução automática de `as` e `ld` para gerar o binário.
+
+## 📝 Sintaxe da Linguagem
+
+### Variáveis e Vetores
+```
+var x = 10;          // variável escalar global
+var arr[5];          // vetor de 5 inteiros (inicializado com zeros)
+```
+
+### Funções
+```
+fun soma(a, b) {
+    return a + b;
+}
+```
+
+### Vetores em Funções
+```
+fun preenche(n) {
+    var v[10];
+    v[0] = n;
+    v[1] = n * 2;
+    return v[0] + v[1];
+}
+```
+
+### Estruturas de Controle
+```
+if x > 0 {
+    y = 1;
+} else {
+    y = 0;
+}
+
+while i < 10 {
+    v[i] = i * 2;
+    i = i + 1;
+}
+```
+
+### Programa Completo
+```
+var v[5];
+var i = 0;
+
+fun soma_vetor(n) {
+    var total = 0;
+    var j = 0;
+    while j < n {
+        total = total + v[j];
+        j = j + 1;
+    }
+    return total;
+}
+
+main {
+    while i < 5 {
+        v[i] = i * 10;
+        i = i + 1;
+    }
+    return soma_vetor(5);
+}
+```
+
+### Operações Vetoriais (AVX2)
+```
+var a[4];
+var b[4];
+var c[4];
+
+main {
+    a[0] = 1; a[1] = 2; a[2] = 3; a[3] = 4;
+    b[0] = 10; b[1] = 20; b[2] = 30; b[3] = 40;
+
+    vadd(c, a, b, 4);    // c[i] = a[i] + b[i] usando AVX2 (vpaddq)
+    vsub(c, c, b, 4);    // c[i] = c[i] - b[i] usando AVX2 (vpsubq)
+    vset(c, 42, 4);      // c[i] = 42 para todos usando AVX2 (vpbroadcastq)
+
+    return c[0];
+}
+```
+
+> **Nota:** Os builtins vetoriais processam 4 inteiros de 64 bits por instrução. O tamanho `n` deve ser múltiplo de 4.
 
 ## Pré-requisitos
 
-Para executar este projeto, você precisará das seguintes ferramentas instaladas no seu ambiente Linux:
+- **Go** (1.23+)
+- **Graphviz** (para visualização da AST)
+- **GCC/Binutils** (`as` e `ld`)
+- **CPU com AVX2** (para executar binários com operações vetoriais — `grep avx2 /proc/cpuinfo`)
 
-- **Go** (versão 1.23 ou superior)
-- **Graphviz** (para o comando `dot` gerar a imagem da árvore)
-- **GCC/Binutils** (para os comandos `as` e `ld`)
-
-### Instalação das dependências (Ubuntu/Debian)
-
+### Instalação (Linux)
 ```bash
 sudo apt update
 sudo apt install golang graphviz build-essential
@@ -33,65 +126,51 @@ sudo apt install golang graphviz build-essential
 ```text
 .
 ├── src/
-│   ├── ast.go          # Definições da Árvore Sintática (AST)
-│   ├── compiler.go     # Geração de Assembly e execução
-│   ├── interpreter.go  # Lógica do interpretador
-│   ├── lexer.go        # Análise Léxica
-│   ├── main.go         # Principal
-│   ├── parser.go       # Análise Sintática
-│   ├── visualizer.go   # Geração da visualização gráfica
-│   └── main_test.go    # Testes automatizados
-│   └── parser_test.go  # Testes de precedência e parser
+│   ├── ast.go              # Estruturas da AST (Programa, Decl, FunDecl, AcessoVetor, etc.)
+│   ├── compiler.go         # Gerador de Assembly x86-64 + Otimizador Peephole
+│   ├── semantic.go         # Verificador semântico de escopos e declarações
+│   ├── interpreter.go      # Interpretador tree-walk com suporte a vetores
+│   ├── lexer.go            # Scanner léxico
+│   ├── main.go             # Ponto de entrada
+│   ├── parser.go           # Parser LL recursivo
+│   ├── visualizer.go       # Gerador de grafos Graphviz
+│   ├── main_test.go        # Testes do compilador x86-64
+│   ├── main_func_test.go   # Testes de funções e vetores no compilador
+│   └── parser_test.go      # Testes do interpretador (precedência, variáveis, vetores)
 ├── assembly/
-│   └── runtime.s       # Rotinas de suporte 
-├── arvore/             # Saída: Arquivos .dot e .png da árvore gerada
-├── output/             # Saída: Arquivos .s, .o e o binário final
-├── go.mod              # Gerenciador de dependências Go
-└── README.md           # Documentação
+│   └── runtime.s           # Runtime: imprime_num e sair (syscalls Linux)
+├── arvore/                 # Saída: imagens .png da AST
+├── output/                 # Saída: assembly .s e binários
 ```
 
 ## 🛠️ Como Executar
-1.  **Acesse a pasta src**
+
+1. **Acesse a pasta src:**
     ```bash
     cd src
     ```
 
-2.  **Baixe as dependências do Go:**
-
+2.  **Execute com a entrada desejada:**
     ```bash
-    go mod tidy
+    go run ./ "fun soma(a, b) { return a + b; } main { return soma(2, 3); }"
     ```
 
-3.  **Execute o compilador passando a expressão entre aspas:**
-
+    Exemplo com vetores:
     ```bash
-    go run ./ "10 + 2 * 3"
+    go run ./ "var v[5]; main { v[0] = 10; v[1] = 20; return v[0] + v[1]; }"
     ```
 
 ### Saída Esperada
-
-O programa irá imprimir no terminal:
-
-- A estrutura da árvore em texto.
-- O resultado calculado pelo interpretador.
-- Mensagens de sucesso da geração da imagem e do binário.
-- A execução do binário gerado.
-
-Além disso, verifique:
-
-- **Imagem da Árvore:** `arvore/arvore.png`
-- **Código Assembly:** `output/output.s`
-- **Executável:** `output/output`
+- Resultado numérico calculado pelo interpretador.
+- Imagem da AST em `arvore/arvore.png`.
+- Assembly otimizado em `output/output.s`.
+- Execução do binário nativo gerado.
 
 ## 🧪 Testes
 
-O projeto possui testes automatizados que verificam o interpretador, a compilação e a precedência de operadores em diversos casos.
-
-Para rodar os testes:
+A suíte contém testes de precedência, variáveis, operadores relacionais/lógicos, funções (incluindo Fibonacci recursivo), vetores globais/locais e compilação x86-64.
 
 ```bash
 cd src
-```
-```bash
 go test -v ./
 ```

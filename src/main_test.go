@@ -30,7 +30,8 @@ func TestInterpretador(t *testing.T) {
 	for _, caso := range casos {
 		t.Run(caso.nome, func(t *testing.T) {
 			// 1. Tokenização
-			tokens, err := tokenize("= " + caso.entrada)
+			// 1. Tokenização
+			tokens, err := tokenize("main { return " + caso.entrada + " ; }")
 			if err != nil {
 				t.Fatalf("Erro na tokenização: %v", err)
 			}
@@ -43,7 +44,7 @@ func TestInterpretador(t *testing.T) {
 			}
 
 			// 3. Interpretação
-			resultado, err := interpretar(arvore, make(map[string]int))
+			resultado, err := interpretar(arvore, make(map[string]int), nil, make(map[string]FunDecl))
 
 			if caso.temErro {
 				if err == nil {
@@ -82,7 +83,7 @@ func TestCompilador(t *testing.T) {
 	index := 0
 	for _, caso := range casos {
 		t.Run(caso.nome, func(t *testing.T) {
-			tokens, _ := tokenize("= " + caso.entrada)
+			tokens, _ := tokenize("main { return " + caso.entrada + " ; }")
 			parser := &Parser{tokens: tokens}
 			arvore, _ := parser.analisaPrograma()
 

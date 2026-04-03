@@ -49,7 +49,7 @@ func main() {
 	gerarVisualizacao(arvore, "arvore")
 	
 	amb := make(map[string]int)
-	resultado, err := interpretar(arvore, amb)
+	resultado, err := interpretar(arvore, amb, nil, make(map[string]FunDecl))
 	if err != nil {
 		fmt.Println("Erro de Execução:", err)
 		return
