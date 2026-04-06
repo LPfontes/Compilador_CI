@@ -89,5 +89,5 @@ O projeto possui testes automatizados que verificam o interpretador e a compila√
 Para rodar os testes:
 
 ```bash
-go test -v ./src
+go test -v ./
 ```
