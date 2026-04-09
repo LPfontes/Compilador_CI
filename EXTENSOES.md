@@ -4,7 +4,7 @@ Este documento detalha as extensões implementadas no compilador da linguagem **
 
 ---
 
-## 1. Extensões Simples (Base de Expressividade)
+## 1. Extensões Simples
 
 Estas extensões focam na melhoria da sintaxe e das capacidades lógicas básicas da linguagem:
 
@@ -14,7 +14,7 @@ Estas extensões focam na melhoria da sintaxe e das capacidades lógicas básica
 
 ---
 
-## 2. Extensões de Complexidade Média (Estruturas de Dados)
+## 2. Extensões de Complexidade Média 
 
 * **Suporte para Arrays de Inteiros (Vetores)**: Implementamos o suporte completo para vetores estáticos.
     * **Escopo**: Disponível tanto em escopo global (seção `.bss`) quanto local (alocado na pilha/stack frame).
@@ -22,7 +22,7 @@ Estas extensões focam na melhoria da sintaxe e das capacidades lógicas básica
 
 ---
 
-## 3. Extensões de Complexidade Alta (Performance e Hardware)
+## 3. Extensões de Complexidade Alta
 
 Estas funcionalidades representam o topo da complexidade técnica do projeto, focando em otimização de baixo nível:
 
